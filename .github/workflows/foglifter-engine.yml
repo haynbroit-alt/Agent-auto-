@@ -1,0 +1,54 @@
+# FogLifter — orchestration depuis GitHub (centre de commande)
+#
+# Secrets recommandés (Settings > Secrets and variables > Actions) :
+#   N8N_CRON_WEBHOOK_URL   — URL complète du webhook n8n qui enchaîne ingestion / pipeline
+#
+# Variables optionnelles (Settings > Variables > Actions) :
+#   FOGFILTER_ENGINE_NOTE    — texte libre pour tracer l’environnement (non secret)
+
+name: FogLifter Engine
+
+on:
+  schedule:
+    # Toutes les 6 heures (UTC). Ajuste selon ton fuseau et ta charge.
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: foglifter-engine-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  run-main-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Contexte (sans secrets)
+        run: |
+          echo "Réf dépôt : ${{ github.ref_name }} @ ${{ github.sha }}"
+          echo "Déclencheur : ${{ github.event_name }}"
+          echo "Note variable : ${{ vars.FOGFILTER_ENGINE_NOTE }}"
+
+      - name: Déclencher le moteur n8n (optionnel)
+        env:
+          N8N_CRON_WEBHOOK_URL: ${{ secrets.N8N_CRON_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${N8N_CRON_WEBHOOK_URL:-}" ]; then
+            echo "Secret N8N_CRON_WEBHOOK_URL absent — aucun appel distant (normal tant que tu n'as pas branché le webhook)."
+            exit 0
+          fi
+          curl -fsS -m 180 -X POST "$N8N_CRON_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"source\":\"github-actions\",\"repository\":\"${{ github.repository }}\",\"sha\":\"${{ github.sha }}\"}"
+
+      - name: Placeholder pipeline local
+        run: |
+          echo "Ajoute ici des steps : Python (scripts/), Supabase CLI, tests, etc."
+          echo "Les clés vont dans les Secrets GitHub, jamais dans le code."

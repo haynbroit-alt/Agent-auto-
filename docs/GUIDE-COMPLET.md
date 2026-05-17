@@ -90,9 +90,12 @@ docker compose up -d
 | `scripts/backup-foglifter.sh` | Sauvegardes `pg_dump` |
 | `scripts/restore-foglifter.sh` | Restauration ciblée |
 | `docs/PERFORMANCE-ET-EXPLOITATION.md` | Tuning Postgres/n8n, HTTPS, cron, scaling |
+| `docs/ARCHITECTURE-GITHUB-CENTRE.md` | Vision « GitHub au centre » + briques remplaçables |
 | `docker/caddy/Caddyfile.example` | Exemple TLS (Caddy) |
 | `docker-compose.override.example.yml` | Plafonds CPU/RAM type prod |
 | `docs/COMPOSER-2-ARBITRAGE.md` | Installation Composer 2 |
+| `docs/GITHUB-ACTIONS-SECRETS.md` | Secrets / variables pour le workflow Actions |
+| `.github/workflows/foglifter-engine.yml` | Cron + dispatch + webhook n8n optionnel |
 | `docs/MAKE-COM-NOCODE.md` | Variante 100 % hébergée (Make) |
 
 ## Mobile au quotidien
