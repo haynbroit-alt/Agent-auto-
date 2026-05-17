@@ -62,6 +62,7 @@ flowchart LR
 | Composer 2 | [`docs/COMPOSER-2-ARBITRAGE.md`](docs/COMPOSER-2-ARBITRAGE.md) |
 | Performance, backups, HTTPS | [`docs/PERFORMANCE-ET-EXPLOITATION.md`](docs/PERFORMANCE-ET-EXPLOITATION.md) |
 | Architecture GitHub + cloud | [`docs/ARCHITECTURE-GITHUB-CENTRE.md`](docs/ARCHITECTURE-GITHUB-CENTRE.md), [`docs/GITHUB-ACTIONS-SECRETS.md`](docs/GITHUB-ACTIONS-SECRETS.md) |
+| **Render (Dockerfile n8n)** | [`docs/RENDER.md`](docs/RENDER.md) |
 | Make.com | [`docs/MAKE-COM-NOCODE.md`](docs/MAKE-COM-NOCODE.md) |
 
 ## Raccourcis Makefile
@@ -72,7 +73,8 @@ flowchart LR
 
 | Rôle | Chemin |
 |------|--------|
-| Stack Docker | `docker-compose.yml` |
+| Stack Docker (local / VPS) | `docker-compose.yml` |
+| Image n8n **Render** | `Dockerfile` + `docker/render-n8n-entrypoint.sh` |
 | Orchestration planifiée | `.github/workflows/foglifter-engine.yml` |
 | Sauvegardes | `scripts/backup-foglifter.sh`, `scripts/restore-foglifter.sh` |
 | Vérifs locales | `scripts/check-environment.sh` |
