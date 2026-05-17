@@ -16,7 +16,10 @@
       "name": "Every 6 hours",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [-1200, 0]
+      "position": [
+        -1200,
+        0
+      ]
     },
     {
       "parameters": {
@@ -27,7 +30,10 @@
       "name": "RSS aides (exemple)",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.2,
-      "position": [-960, 0]
+      "position": [
+        -960,
+        0
+      ]
     },
     {
       "parameters": {
@@ -37,7 +43,10 @@
       "name": "Build LLM payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-720, 0]
+      "position": [
+        -720,
+        0
+      ]
     },
     {
       "parameters": {
@@ -67,7 +76,13 @@
       "name": "OpenAI extraction",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-480, 0]
+      "position": [
+        -480,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 3000
     },
     {
       "parameters": {
@@ -77,7 +92,10 @@
       "name": "Parse OpenAI + SQL insert",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-240, 0]
+      "position": [
+        -240,
+        0
+      ]
     },
     {
       "parameters": {
@@ -91,7 +109,10 @@
       "name": "PG insert subsidy",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [0, 0]
+      "position": [
+        0,
+        0
+      ]
     },
     {
       "parameters": {
@@ -105,7 +126,10 @@
       "name": "PG load companies",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [240, 0]
+      "position": [
+        240,
+        0
+      ]
     },
     {
       "parameters": {
@@ -116,7 +140,10 @@
       "name": "Score matches (MVP)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 0]
+      "position": [
+        480,
+        0
+      ]
     },
     {
       "parameters": {
@@ -155,7 +182,10 @@
       "name": "Match fort ?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [720, 0]
+      "position": [
+        720,
+        0
+      ]
     },
     {
       "parameters": {
@@ -167,7 +197,10 @@
       "name": "Telegram alerte",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [960, -120]
+      "position": [
+        960,
+        -120
+      ]
     },
     {
       "parameters": {
@@ -177,7 +210,10 @@
       "name": "Build SQL upsert match",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 120]
+      "position": [
+        960,
+        120
+      ]
     },
     {
       "parameters": {
@@ -189,7 +225,10 @@
       "name": "PG upsert match",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [1200, 120]
+      "position": [
+        1200,
+        120
+      ]
     },
     {
       "parameters": {
@@ -199,7 +238,10 @@
       "name": "Build SQL log action",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1440, 120]
+      "position": [
+        1440,
+        120
+      ]
     },
     {
       "parameters": {
@@ -211,7 +253,10 @@
       "name": "PG log action",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [1680, 120]
+      "position": [
+        1680,
+        120
+      ]
     },
     {
       "parameters": {
@@ -223,7 +268,10 @@
       "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-1240, -320]
+      "position": [
+        -1240,
+        -320
+      ]
     }
   ],
   "pinData": {},

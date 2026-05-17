@@ -2,7 +2,7 @@
 
 Composer 2 transforme des flux **réglementaires / supervision** (AMF, EUR-Lex, etc.) en **signaux structurés** (BUY / SELL / HOLD) reliés à des **instruments** (`fl_instruments`), avec persistance dans `fl_arbitrage_matches` et alertes **Telegram** lorsque la confiance dépasse un seuil.
 
-Ce document complète `docs/GUIDE-COMPLET.md` (Composer 1).
+Ce document complète `docs/GUIDE-COMPLET.md` (Composer 1) et `docs/PERFORMANCE-ET-EXPLOITATION.md` (tuning, sauvegardes, HTTPS).
 
 ## Prérequis
 
@@ -17,9 +17,10 @@ Sur une base **déjà initialisée** (volume existant), exécuter manuellement :
 ```bash
 docker compose exec -T foglifter-postgres psql -U "$FOGLIFTER_DB_USER" -d "$FOGLIFTER_DB_NAME" -f - < sql/003_arbitrage_schema.sql
 docker compose exec -T foglifter-postgres psql -U "$FOGLIFTER_DB_USER" -d "$FOGLIFTER_DB_NAME" -f - < sql/004_seed_arbitrage_instruments.sql
+docker compose exec -T foglifter-postgres psql -U "$FOGLIFTER_DB_USER" -d "$FOGLIFTER_DB_NAME" -f - < sql/005_performance_indexes.sql
 ```
 
-Sur **nouvelle** installation, `003` est aussi monté dans `docker-entrypoint-initdb.d` et s’applique au premier démarrage du volume `foglifter-postgres`.
+Sur **nouvelle** installation, `003` et `005` sont montés dans `docker-entrypoint-initdb.d` et s’appliquent au premier démarrage du volume `foglifter-postgres`.
 
 ## 2. Workflow n8n
 

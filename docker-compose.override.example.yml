@@ -1,0 +1,15 @@
+# Exemple d’override production : copier vers `docker-compose.override.yml` (fichier local, souvent non versionné).
+# Vérifie avec `docker compose config` que ton moteur Compose accepte `mem_limit` / `cpus` (plugin Docker récent).
+
+services:
+  n8n:
+    mem_limit: 2g
+    cpus: 2.0
+
+  foglifter-postgres:
+    mem_limit: 1g
+    cpus: 1.5
+
+  postgres:
+    mem_limit: 512m
+    cpus: 1.0
