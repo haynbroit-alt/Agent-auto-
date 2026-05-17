@@ -16,6 +16,7 @@ Tous les fichiers Markdown du projet (ordre logique de lecture).
 | 8 | [`ARCHITECTURE-GITHUB-CENTRE.md`](ARCHITECTURE-GITHUB-CENTRE.md) | GitHub au centre, briques cloud remplaçables |
 | 9 | [`GITHUB-ACTIONS-SECRETS.md`](GITHUB-ACTIONS-SECRETS.md) | Secrets Actions, webhooks, cron UTC |
 | 10 | [`MAKE-COM-NOCODE.md`](MAKE-COM-NOCODE.md) | Alternative Make.com |
+| 11 | [`RENDER.md`](RENDER.md) | Déploiement n8n sur Render (Dockerfile racine, `PORT`, env) |
 
 ## Fichiers hors `docs/`
 
@@ -24,5 +25,6 @@ Tous les fichiers Markdown du projet (ordre logique de lecture).
 | [`LICENSE`](../LICENSE) | Licence MIT |
 | [`SECURITY.md`](../SECURITY.md) | Signalement de vulnérabilités |
 | [`.github/workflows/foglifter-engine.yml`](../.github/workflows/foglifter-engine.yml) | Workflow GitHub Actions |
-| [`docker-compose.yml`](../docker-compose.yml) | Stack Docker |
+| [`Dockerfile`](../Dockerfile) | Image n8n pour Render (`PORT` → `N8N_PORT`) |
+| [`docker-compose.yml`](../docker-compose.yml) | Stack Docker complète (local / VPS) |
 | [`Makefile`](../Makefile) | Raccourcis `make` |

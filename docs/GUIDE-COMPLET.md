@@ -106,7 +106,8 @@ docker compose up -d
 | `docs/COMPOSER-2-ARBITRAGE.md` | Installation Composer 2 |
 | `docs/GITHUB-ACTIONS-SECRETS.md` | Secrets / variables pour le workflow Actions |
 | `.github/workflows/foglifter-engine.yml` | Cron + dispatch + webhook n8n optionnel |
-| `docs/MAKE-COM-NOCODE.md` | Variante 100 % hébergée (Make) |
+| `docs/RENDER.md` | Déploiement **n8n sur Render** (Dockerfile, `PORT`, Postgres managé) |
+| `Dockerfile` | Image n8n pour Render uniquement (local : préférer `docker compose`) |
 
 ## Mobile au quotidien
 

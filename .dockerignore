@@ -1,0 +1,6 @@
+# Contexte Docker minimal pour Render (build plus léger)
+.git
+.env
+.env.*
+backups
+.github

@@ -39,6 +39,8 @@ Puis ouvre n8n sur `http://IP_DU_SERVEUR:5678`, importe `workflows/foglifter-mai
 | `README.md` | Hub synthétique du dépôt |
 | `LICENSE` | Licence MIT |
 | `SECURITY.md` | Signalement de vulnérabilités |
+| `docs/RENDER.md` | Déploiement **n8n sur Render** (Dockerfile racine) |
+| `Dockerfile` | Image n8n pour Render (le local reste `docker compose`) |
 
 ---
 
@@ -104,5 +106,6 @@ flowchart TB
 | Erreur mot de passe Postgres | `.env` = mêmes valeurs que les credentials n8n pour `foglifter-postgres` |
 | Webhooks n8n cassés | `WEBHOOK_URL` en `https://…` cohérent avec ton proxy |
 | GitHub Action silencieuse | Secret `N8N_CRON_WEBHOOK_URL` absent ou URL incorrecte ; cron en **UTC** |
+| Render : « open Dockerfile: no such file » | Le `Dockerfile` doit être sur la branche déployée (**racine**). Voir **`docs/RENDER.md`**. |
 
 Pour le détail : **`docs/GUIDE-COMPLET.md`**.
