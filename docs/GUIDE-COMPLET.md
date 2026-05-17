@@ -1,5 +1,8 @@
 # FogLifter — guide complet (smartphone-friendly)
 
+> **Nouveau sur le projet ?** Lis d’abord [`docs/00-DEMARRAGE.md`](00-DEMARRAGE.md) (10 étapes + dépannage).  
+> **Agent IA ?** Lis [`../AGENTS.md`](../AGENTS.md) avant de modifier le dépôt.
+
 Ce dépôt regroupe une **stack prête à l’emploi** : Docker (n8n + PostgreSQL), schéma SQL métier, workflows n8n importables (Composer 1 + **Composer 2 — arbitrage réglementaire**, voir `docs/COMPOSER-2-ARBITRAGE.md`), guide **performance / prod** (`docs/PERFORMANCE-ET-EXPLOITATION.md`), et une alternative **Make.com** décrite séparément.
 
 ## Objectif
@@ -78,6 +81,9 @@ docker compose up -d
 
 | Fichier | Description |
 |---------|-------------|
+| `docs/00-DEMARRAGE.md` | Parcours express + dépannage |
+| `AGENTS.md` | Règles pour agents IA |
+| `Makefile` | Raccourcis \`make check\`, \`make up\`, etc. |
 | `docker-compose.yml` | n8n + 2 bases PostgreSQL |
 | `sql/001_foglifter_schema.sql` | Schéma métier Composer 1 |
 | `sql/002_seed_example_companies.sql` | Données de test |
