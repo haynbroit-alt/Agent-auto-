@@ -12,6 +12,7 @@ Orchestration **n8n** + **PostgreSQL** (base interne n8n + base métier `foglift
 | Déploiement smartphone / VPS | `docs/GUIDE-COMPLET.md` |
 | Composer 2 (installation, migration SQL) | `docs/COMPOSER-2-ARBITRAGE.md` |
 | **Performance, sauvegardes, HTTPS, scaling** | `docs/PERFORMANCE-ET-EXPLOITATION.md` |
+| **GitHub comme centre de commande** (Actions + briques cloud) | `docs/ARCHITECTURE-GITHUB-CENTRE.md`, `docs/GITHUB-ACTIONS-SECRETS.md` |
 | Variante Make.com | `docs/MAKE-COM-NOCODE.md` |
 
 ## Démarrage rapide
@@ -35,6 +36,11 @@ Importer les workflows n8n, créer les **credentials Postgres** (`foglifter-post
 - **HTTPS** : exemple Caddy dans `docker/caddy/Caddyfile.example`.
 - **Ressources** : exemple de plafonds CPU/RAM dans `docker-compose.override.example.yml`.
 
+## Orchestration GitHub
+
+- Workflow **`.github/workflows/foglifter-engine.yml`** : cron toutes les **6 h (UTC)** + lancement manuel ; option pour **POST** vers un webhook n8n (`N8N_CRON_WEBHOOK_URL` dans les secrets du dépôt).
+- Voir **`docs/ARCHITECTURE-GITHUB-CENTRE.md`** (vision modulaire) et **`docs/GITHUB-ACTIONS-SECRETS.md`** (liste des secrets / variables).
+
 ## Fichiers clés (résumé)
 
 | Composer | SQL | Workflow |
@@ -42,7 +48,7 @@ Importer les workflows n8n, créer les **credentials Postgres** (`foglifter-post
 | 1 | `001`, `002` (seed entreprises), `005` (index partagés) | `workflows/foglifter-main.json` |
 | 2 | `003`, `004` (seed instruments), `005` | `workflows/foglifter-arbitrage.json` |
 
-Scripts : `scripts/arbitrage-scoring.py`, `scripts/backup-foglifter.sh`, `scripts/restore-foglifter.sh`.
+Scripts : `scripts/arbitrage-scoring.py`, `scripts/backup-foglifter.sh`, `scripts/restore-foglifter.sh`. CI : `.github/workflows/foglifter-engine.yml`.
 
 ## Roadmap (esquisse)
 
