@@ -73,7 +73,8 @@ flowchart LR
 
 | Rôle | Chemin |
 |------|--------|
-| Stack Docker | `docker-compose.yml` |
+| Stack Docker (local / VPS) | `docker-compose.yml` |
+| Image n8n **Render** | `Dockerfile` + `docker/render-n8n-entrypoint.sh` |
 | Orchestration planifiée | `.github/workflows/foglifter-engine.yml` |
 | Sauvegardes | `scripts/backup-foglifter.sh`, `scripts/restore-foglifter.sh` |
 | Vérifs locales | `scripts/check-environment.sh` |
