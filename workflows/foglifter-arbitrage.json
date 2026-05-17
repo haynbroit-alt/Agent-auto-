@@ -1,0 +1,518 @@
+{
+  "name": "FogLifter — Composer 2 (arbitrage réglementaire)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "id": "b8d0ef75-74b4-48bc-be78-109ec9865e21",
+      "name": "Every 4 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1600,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "path": "foglifter-regulatory-urgent",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "5f996750-efca-4e42-933e-f33c2510ac02",
+      "name": "Webhook urgent",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $input.first().json.body ?? $input.first().json;\nreturn [{\n  json: {\n    title: String(b.title ?? b.subject ?? 'Urgent'),\n    link: String(b.url ?? b.source_url ?? 'manual://webhook'),\n    contentSnippet: String(b.text ?? b.summary ?? b.description ?? ''),\n  },\n}];\n"
+      },
+      "id": "2c763b3a-ae6e-4e27-9b12-b9c82af8ee7a",
+      "name": "Webhook normalize",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1360,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://reglement-general.amf-france.org/fr/flux-rss/display/31",
+        "options": {}
+      },
+      "id": "fcc001f1-2103-4b11-a71a-1a9c6c9e0759",
+      "name": "RSS AMF reg",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -1360,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst schema = [\n  '{',\n  '  \"event_type\": \"changement_norme|nouvelle_obligation|sanction|subvention\",',\n  '  \"instruments_impactes\": [\"liste ISIN ou symbols\"],',\n  '  \"direction\": \"positif|négatif|neutre\",',\n  '  \"impact_estime_pct\": number,',\n  '  \"raison\": \"phrase courte\",',\n  '  \"niveau_urgence\": \"low|medium|high\"',\n  '}',\n].join('\\n');\n\nconst prompt = [\n  'Tu es un analyste quantitatif spécialisé en arbitrage réglementaire.',\n  'Extraire au format JSON uniquement :',\n  schema,\n  '',\n  'Titre : ' + (item.title || ''),\n  'Lien : ' + (item.link || ''),\n  'Extrait : ' + (item.contentSnippet || ''),\n].join('\\n');\n\nreturn [{\n  json: {\n    link: item.link,\n    title: item.title,\n    contentSnippet: item.contentSnippet || '',\n    openai_body: {\n      model: 'gpt-4o-mini',\n      messages: [\n        { role: 'system', content: 'Réponds uniquement avec un objet JSON valide, sans markdown.' },\n        { role: 'user', content: prompt },\n      ],\n      response_format: { type: 'json_object' },\n      temperature: 0.15,\n    },\n  },\n}];\n"
+      },
+      "id": "b852baf8-6145-4b3d-87d2-74de3290434f",
+      "name": "Build arbitrage LLM payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.OPENAI_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.openai_body) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "c8c12466-643c-47ec-b418-4db70e7e330c",
+      "name": "OpenAI arbitrage extraction",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -880,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json;\nconst txt = res.choices?.[0]?.message?.content || '{}';\nlet extracted = {};\ntry { extracted = JSON.parse(txt); } catch { extracted = { parse_error: true, raw: String(txt).slice(0, 2000) }; }\n\nconst prev = $('Build arbitrage LLM payload').first().json;\nconst crypto = require('crypto');\nconst hash = crypto.createHash('sha256').update(`${prev.title}|${prev.link}|${txt}`).digest('hex');\nconst impact = Number(extracted.impact_estime_pct || 0);\nconst impactScore = Math.min(100, Math.abs(impact) * 1.1);\n\nconst escSql = (s) => String(s ?? '').replace(/'/g, \"''\");\nconst tag = 'rg' + crypto.randomBytes(6).toString('hex');\nconst ej = JSON.stringify(extracted);\n\nconst query = `INSERT INTO fl_regulatory_events (source_url, content_hash, title, extracted_json, event_date, impact_score) VALUES (\n  '${escSql(prev.link)}',\n  '${escSql(hash)}',\n  '${escSql(prev.title)}',\n  $${tag}$${ej}$${tag}$::jsonb,\n  now(),\n  ${Number(impactScore.toFixed(4))}\n) ON CONFLICT (source_url, content_hash) DO UPDATE SET\n  title = EXCLUDED.title,\n  extracted_json = EXCLUDED.extracted_json,\n  event_date = EXCLUDED.event_date,\n  impact_score = EXCLUDED.impact_score\nRETURNING id`;\n\nreturn [{ json: { query, extracted, link: prev.link, title: prev.title } }];\n"
+      },
+      "id": "004335bb-156c-4b1d-88aa-11bc2e9d4c1d",
+      "name": "Parse OpenAI + SQL regulatory",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.query }}",
+        "options": {
+          "alwaysOutputData": true
+        }
+      },
+      "id": "5fea0e89-ef23-433c-9eb2-fc916bc930b2",
+      "name": "PG insert regulatory event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -400,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT isin, symbol, type, sector, metadata FROM fl_instruments ORDER BY updated_at DESC LIMIT 500",
+        "options": {
+          "alwaysOutputData": true
+        }
+      },
+      "id": "86271185-67b6-48a4-943f-5044d3e562d1",
+      "name": "PG load instruments",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -160,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const eventRow = $('PG insert regulatory event').first().json;\nconst eventId = eventRow.id;\nif (!eventId) {\n  return [{ json: { skip: true, reason: 'no_event_id', confidence: 0 } }];\n}\n\nconst extracted = $('Parse OpenAI + SQL regulatory').first().json.extracted || {};\n\nconst niveau = String(extracted.niveau_urgence || '').toLowerCase();\nlet base = 45;\nif (niveau === 'high') base = 72;\nelse if (niveau === 'medium') base = 55;\nelse if (niveau === 'low') base = 38;\n\nconst impact = Number(extracted.impact_estime_pct || 0);\nlet confidence = base + Math.min(28, Math.abs(impact) * 1.6);\nconfidence = Math.max(0, Math.min(100, confidence));\n\nconst dir = String(extracted.direction || '').toLowerCase();\nlet signal = 'HOLD';\nif (dir.includes('positif')) signal = 'BUY';\nelse if (dir.includes('négatif') || dir.includes('negatif')) signal = 'SELL';\n\nconst tokens = (extracted.instruments_impactes || []).map((t) => String(t).trim()).filter(Boolean);\nconst rows = $input.all().map((i) => i.json).filter((r) => r && r.isin);\n\nconst out = [];\nfor (const tok of tokens) {\n  const u = tok.toUpperCase();\n  let inst = rows.find((r) => String(r.isin).toUpperCase() === u);\n  if (!inst) inst = rows.find((r) => String(r.symbol || '').toUpperCase() === u);\n  if (!inst) continue;\n\n  const esc = (s) => String(s).replace(/'/g, \"''\");\n  const query = `INSERT INTO fl_arbitrage_matches (event_id, instrument_id, signal, confidence, expected_return) VALUES (\n  ${Number(eventId)},\n  '${esc(String(inst.isin))}',\n  '${signal}',\n  ${Number(confidence.toFixed(2))},\n  ${Number(impact)}\n) ON CONFLICT (event_id, instrument_id) DO UPDATE SET\n  signal = EXCLUDED.signal,\n  confidence = EXCLUDED.confidence,\n  expected_return = EXCLUDED.expected_return\nRETURNING id`;\n\n  out.push({\n    json: {\n      skip: false,\n      query,\n      confidence,\n      signal,\n      isin: inst.isin,\n      symbol: inst.symbol,\n      extracted,\n    },\n  });\n}\n\nif (!out.length) {\n  return [{ json: { skip: true, reason: 'no_instrument_match', confidence: 0 } }];\n}\nreturn out;\n"
+      },
+      "id": "35963bff-8cab-4244-8b8e-1119f8589d2c",
+      "name": "Match instruments & signals (MVP)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c-skip",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "658da6bd-f467-46e1-932b-afbfcfe4eccd",
+      "name": "Has instrument match?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.query }}",
+        "options": {}
+      },
+      "id": "20f2ab81-4a7f-4735-b817-8e82a91aebf6",
+      "name": "PG upsert arbitrage match",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        560,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c-skip2",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "c-conf",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 80,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1d73c19a-91b7-4368-9989-e9148fe48186",
+      "name": "High confidence (>=80)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=Composer2 — confiance {{$json.confidence}}%\nSignal {{$json.signal}} sur {{$json.symbol}} ({{$json.isin}})\nType événement : {{$json.extracted.event_type}}\nRaison : {{$json.extracted.raison}}\n",
+        "additionalFields": {}
+      },
+      "id": "82f0d81b-ad29-4dcb-89f0-bc28ab6356f6",
+      "name": "Telegram prioritaire",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BROKER_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ source: \"foglifter-composer2\", signal: $json.signal, isin: $json.isin, symbol: $json.symbol, confidence: $json.confidence, extracted: $json.extracted }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "2909bd22-06b0-48ee-b47e-8f371b4524a1",
+      "name": "Broker webhook (optionnel)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c-url",
+              "leftValue": "={{ $env.BROKER_WEBHOOK_URL }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "772fc191-a7d6-4330-acec-c6d0e160013b",
+      "name": "Broker URL configurée?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Composer 2 — Arbitrage\n\n- **Postgres** : même credential que Composer 1 (`foglifter-postgres`).\n- **Schéma** : exécuter `sql/003_arbitrage_schema.sql` (+ seed `004`).\n- **Broker** : renseigne `BROKER_WEBHOOK_URL` dans `.env` pour activer le node HTTP ; sinon laisse vide.\n- **Vectoriel** : non inclus — remplace le node *Match instruments* par ta couche sémantique.\n",
+        "height": 420,
+        "width": 460
+      },
+      "id": "bd36dd5c-4d60-4614-b73a-20424479689d",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1640,
+        -260
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every 4 hours": {
+      "main": [
+        [
+          {
+            "node": "RSS AMF reg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook urgent": {
+      "main": [
+        [
+          {
+            "node": "Webhook normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS AMF reg": {
+      "main": [
+        [
+          {
+            "node": "Build arbitrage LLM payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook normalize": {
+      "main": [
+        [
+          {
+            "node": "Build arbitrage LLM payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build arbitrage LLM payload": {
+      "main": [
+        [
+          {
+            "node": "OpenAI arbitrage extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI arbitrage extraction": {
+      "main": [
+        [
+          {
+            "node": "Parse OpenAI + SQL regulatory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse OpenAI + SQL regulatory": {
+      "main": [
+        [
+          {
+            "node": "PG insert regulatory event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG insert regulatory event": {
+      "main": [
+        [
+          {
+            "node": "PG load instruments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG load instruments": {
+      "main": [
+        [
+          {
+            "node": "Match instruments & signals (MVP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match instruments & signals (MVP)": {
+      "main": [
+        [
+          {
+            "node": "Has instrument match?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "High confidence (>=80)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has instrument match?": {
+      "main": [
+        [
+          {
+            "node": "PG upsert arbitrage match",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "High confidence (>=80)?": {
+      "main": [
+        [
+          {
+            "node": "Telegram prioritaire",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Broker URL configurée?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Broker URL configurée?": {
+      "main": [
+        [
+          {
+            "node": "Broker webhook (optionnel)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "composer2-arbitrage-1",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
