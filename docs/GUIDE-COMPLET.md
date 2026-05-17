@@ -82,6 +82,10 @@ docker compose up -d
 | Fichier | Description |
 |---------|-------------|
 | `docs/00-DEMARRAGE.md` | Parcours express + dépannage |
+| `docs/INDEX.md` | Index ordonné de toute la documentation |
+| `CONTRIBUTING.md` | Guide de contribution |
+| `LICENSE` | Licence MIT |
+| `SECURITY.md` | Politique de sécurité |
 | `AGENTS.md` | Règles pour agents IA |
 | `Makefile` | Raccourcis \`make check\`, \`make up\`, etc. |
 | `docker-compose.yml` | n8n + 2 bases PostgreSQL |
