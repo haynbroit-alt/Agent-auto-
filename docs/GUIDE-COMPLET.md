@@ -1,6 +1,6 @@
 # FogLifter — guide complet (smartphone-friendly)
 
-Ce dépôt regroupe une **stack prête à l’emploi** : Docker (n8n + PostgreSQL), schéma SQL métier, workflow n8n importable, et une alternative **Make.com** décrite séparément.
+Ce dépôt regroupe une **stack prête à l’emploi** : Docker (n8n + PostgreSQL), schéma SQL métier, workflows n8n importables (Composer 1 + **Composer 2 — arbitrage réglementaire**, voir `docs/COMPOSER-2-ARBITRAGE.md`), et une alternative **Make.com** décrite séparément.
 
 ## Objectif
 
@@ -79,9 +79,14 @@ docker compose up -d
 | Fichier | Description |
 |---------|-------------|
 | `docker-compose.yml` | n8n + 2 bases PostgreSQL |
-| `sql/001_foglifter_schema.sql` | Schéma métier |
+| `sql/001_foglifter_schema.sql` | Schéma métier Composer 1 |
 | `sql/002_seed_example_companies.sql` | Données de test |
-| `workflows/foglifter-main.json` | Workflow MVP |
+| `sql/003_arbitrage_schema.sql` | Schéma Composer 2 |
+| `sql/004_seed_arbitrage_instruments.sql` | Instruments de test |
+| `workflows/foglifter-main.json` | Workflow MVP Composer 1 |
+| `workflows/foglifter-arbitrage.json` | Workflow Composer 2 |
+| `scripts/arbitrage-scoring.py` | Scoring backup hors n8n |
+| `docs/COMPOSER-2-ARBITRAGE.md` | Installation Composer 2 |
 | `docs/MAKE-COM-NOCODE.md` | Variante 100 % hébergée (Make) |
 
 ## Mobile au quotidien

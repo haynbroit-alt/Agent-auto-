@@ -24,6 +24,7 @@ services:
     volumes:
       - foglifter_postgres_data:/var/lib/postgresql/data
       - ./sql/001_foglifter_schema.sql:/docker-entrypoint-initdb.d/001_foglifter_schema.sql:ro
+      - ./sql/003_arbitrage_schema.sql:/docker-entrypoint-initdb.d/003_arbitrage_schema.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${FOGLIFTER_DB_USER:-foglifter} -d ${FOGLIFTER_DB_NAME:-foglifter}"]
       interval: 10s
@@ -55,6 +56,8 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       # Optionnel : chat_id Telegram (node Telegram du workflow)
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      # Optionnel : endpoint HTTP pour relayer un signal vers un broker / bot d’exécution
+      - BROKER_WEBHOOK_URL=${BROKER_WEBHOOK_URL:-}
     volumes:
       - n8n_data:/home/node/.n8n
     depends_on:

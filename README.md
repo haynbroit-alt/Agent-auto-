@@ -1,27 +1,38 @@
-# FogLifter (stack MVP)
+# FogLifter — Composer 1 & 2
 
-Orchestration **n8n** + **PostgreSQL** (n8n + base métier), workflow d’import JSON, matching léger et alertes **Telegram**. Tout est documenté en français dans `docs/GUIDE-COMPLET.md`.
+Orchestration **n8n** + **PostgreSQL** (base interne n8n + base métier `foglifter`). Ce dépôt couvre :
+
+- **Composer 1** — matching entreprise ↔ subvention (commission au succès) : `workflows/foglifter-main.json`, schéma `sql/001_foglifter_schema.sql`.
+- **Composer 2** — signaux d’**arbitrage réglementaire** (événements ↔ instruments) : `workflows/foglifter-arbitrage.json`, schéma `sql/003_arbitrage_schema.sql`.
+
+Documentation : `docs/GUIDE-COMPLET.md`, `docs/COMPOSER-2-ARBITRAGE.md`, `docs/MAKE-COM-NOCODE.md`.
 
 ## Démarrage rapide
 
 ```bash
 cp .env.example .env
-# Éditer .env : mots de passe, OPENAI_API_KEY, TELEGRAM_CHAT_ID, N8N_ENCRYPTION_KEY (prod)
+# Éditer .env : mots de passe, OPENAI_API_KEY, TELEGRAM_CHAT_ID, N8N_ENCRYPTION_KEY (prod), WEBHOOK_URL (HTTPS), optionnel BROKER_WEBHOOK_URL
 
 docker compose up -d
 ```
 
-Importer `workflows/foglifter-main.json` dans n8n, créer les **credentials Postgres** (`foglifter-postgres`) et **Telegram**, puis exécuter un test manuel.
+Importer les workflows n8n, créer les **credentials Postgres** (`foglifter-postgres`) et **Telegram**, appliquer les SQL sur une base déjà existante si besoin (voir les guides).
 
-## Contenu du dépôt
+## Fichiers clés
 
-- `docker-compose.yml` — services n8n, Postgres interne n8n, Postgres FogLifter
-- `sql/001_foglifter_schema.sql` — tables `fl_*`
-- `sql/002_seed_example_companies.sql` — données de démo optionnelles
-- `workflows/foglifter-main.json` — workflow MVP (RSS → OpenAI → PG → score → Telegram)
-- `docs/GUIDE-COMPLET.md` — guide pas à pas (VPS, sécurité, mobile)
-- `docs/MAKE-COM-NOCODE.md` — variante orchestrée sur Make.com
+| Composer | SQL | Workflow | Doc |
+|----------|-----|----------|-----|
+| 1 | `001`, `002` (seed entreprises) | `workflows/foglifter-main.json` | `docs/GUIDE-COMPLET.md` |
+| 2 | `003`, `004` (seed instruments) | `workflows/foglifter-arbitrage.json` | `docs/COMPOSER-2-ARBITRAGE.md` |
 
-## Alternative no-code
+Script utilitaire (hors n8n) : `scripts/arbitrage-scoring.py`.
 
-Voir `docs/MAKE-COM-NOCODE.md` pour une version sans VPS (coût Make à prévoir).
+## Roadmap (esquisse)
+
+- **Composer 3** — veille narrative (X, médias) + indicateurs de « fog » / sentiment public.
+- **Composer 4** — marketplace d’experts (Clarity Network).
+- **Composer 5** — fonds / exécution (Clarity Fund), garde-fous conformité.
+
+## Avertissement
+
+Les sorties **Composer 2** sont des aides à la décision techniques, pas des conseils en investissement. Conformité AMF / MiFID / obligations d’information à respecter selon ton statut.
