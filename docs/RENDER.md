@@ -38,3 +38,12 @@ Sans Postgres managé, accepte le risque de **perte des données** au redéploie
 ## 5. Déploiement après merge
 
 Après `git push` sur la branche suivie par Render, un nouveau build doit afficher **Build successful** si le `Dockerfile` est présent à la racine.
+
+Render ne redéploie pas toujours tout seul immédiatement après un merge sur `main` : ouvre le service → **Manual Deploy** → **Deploy latest commit** (ou attends le webhook GitHub).
+
+## 6. Dépannage : « open Dockerfile: no such file or directory » alors que le fichier existe sur GitHub
+
+1. **Lire la ligne `==> Checking out commit …` dans les logs de build.** Compare ce hash avec le dernier commit de la branche `main` sur GitHub (`https://github.com/haynbroit-alt/Agent-auto-/commits/main`). Si Render affiche encore un commit **antérieur** au merge qui a ajouté le `Dockerfile` à la racine, le build utilise un **ancien snapshot** : force un déploiement (**Manual Deploy** → **Deploy latest commit**) ou vérifie que le dépôt / la branche connectée est bien celui où tu as mergé.
+2. **Root Directory** : laisse vide (ou `.`). Si tu mets un sous-dossier (ex. `apps/n8n`), Render cherche le `Dockerfile` **dans ce dossier** ; un `Dockerfile` uniquement à la racine du dépôt ne sera pas trouvé.
+3. **Dockerfile path** : exactement `Dockerfile` (sensible à la casse sur Linux).
+4. Optionnel : **Clear build cache** puis redeploy, si Render propose l’option et que tu soupçonnes un cache incohérent.
