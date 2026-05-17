@@ -1,61 +1,68 @@
-# FogLifter — Composer 1 & 2
+# FogLifter / Clarity — hub du dépôt
 
-Orchestration **n8n** + **PostgreSQL** (base interne n8n + base métier `foglifter`). Ce dépôt couvre :
+**Commence par** [`docs/00-DEMARRAGE.md`](docs/00-DEMARRAGE.md) (parcours en 10 étapes, carte des docs, dépannage).  
+**Agents IA** : lis [`AGENTS.md`](AGENTS.md) avant toute modification.
 
-- **Composer 1** — matching entreprise ↔ subvention (commission au succès) : `workflows/foglifter-main.json`, schéma `sql/001_foglifter_schema.sql`.
-- **Composer 2** — signaux d’**arbitrage réglementaire** (événements ↔ instruments) : `workflows/foglifter-arbitrage.json`, schémas `sql/003_arbitrage_schema.sql` + index `sql/005_performance_indexes.sql`.
+Ce dépôt contient une **usine à signaux** modulaire :
 
-## Documentation
+- **Composer 1** — matching entreprise ↔ subvention : `workflows/foglifter-main.json`, `sql/001_foglifter_schema.sql`.
+- **Composer 2** — arbitrage réglementaire ↔ instruments : `workflows/foglifter-arbitrage.json`, `sql/003_arbitrage_schema.sql`, index `sql/005_performance_indexes.sql`.
+
+## En 30 secondes
+
+```bash
+cp .env.example .env   # puis édite les lignes OBLIGATOIRES
+make check             # ou : ./scripts/check-environment.sh
+make up                # ou : docker compose up -d
+```
+
+Puis importe les workflows dans n8n et configure les **credentials** Postgres + Telegram (détail dans le démarrage).
+
+## Schéma
+
+```mermaid
+flowchart LR
+  Repo[Dépôt GitHub]
+  GA[GitHub Actions]
+  VPS[VPS Docker]
+  N8N[n8n]
+  DB[(Postgres FogLifter + n8n)]
+  Repo --> VPS
+  GA -->|webhook optionnel| N8N
+  VPS --> N8N
+  N8N --> DB
+```
+
+## Documentation (index)
 
 | Sujet | Fichier |
 |-------|---------|
-| Déploiement smartphone / VPS | `docs/GUIDE-COMPLET.md` |
-| Composer 2 (installation, migration SQL) | `docs/COMPOSER-2-ARBITRAGE.md` |
-| **Performance, sauvegardes, HTTPS, scaling** | `docs/PERFORMANCE-ET-EXPLOITATION.md` |
-| **GitHub comme centre de commande** (Actions + briques cloud) | `docs/ARCHITECTURE-GITHUB-CENTRE.md`, `docs/GITHUB-ACTIONS-SECRETS.md` |
-| Variante Make.com | `docs/MAKE-COM-NOCODE.md` |
+| **Démarrage guidé** | [`docs/00-DEMARRAGE.md`](docs/00-DEMARRAGE.md) |
+| **Agents (IA)** | [`AGENTS.md`](AGENTS.md) |
+| VPS, mobile, migrations | [`docs/GUIDE-COMPLET.md`](docs/GUIDE-COMPLET.md) |
+| Composer 2 | [`docs/COMPOSER-2-ARBITRAGE.md`](docs/COMPOSER-2-ARBITRAGE.md) |
+| Performance, backups, HTTPS | [`docs/PERFORMANCE-ET-EXPLOITATION.md`](docs/PERFORMANCE-ET-EXPLOITATION.md) |
+| Architecture GitHub + cloud | [`docs/ARCHITECTURE-GITHUB-CENTRE.md`](docs/ARCHITECTURE-GITHUB-CENTRE.md), [`docs/GITHUB-ACTIONS-SECRETS.md`](docs/GITHUB-ACTIONS-SECRETS.md) |
+| Make.com | [`docs/MAKE-COM-NOCODE.md`](docs/MAKE-COM-NOCODE.md) |
 
-## Démarrage rapide
+## Raccourcis Makefile
 
-```bash
-cp .env.example .env
-# Éditer .env : mots de passe, OPENAI_API_KEY, TELEGRAM_CHAT_ID, N8N_ENCRYPTION_KEY (prod),
-# WEBHOOK_URL (HTTPS), timeouts / pruning n8n, tuning Postgres (optionnel)
+`make help` — voir `Makefile` (`check`, `up`, `down`, `logs`, `backup`, `ps`).
 
-docker compose up -d
-```
+## Fichiers techniques utiles
 
-Importer les workflows n8n, créer les **credentials Postgres** (`foglifter-postgres`) et **Telegram**, appliquer les migrations SQL sur une base **déjà existante** si besoin (`005` et seeds — voir les guides).
+| Rôle | Chemin |
+|------|--------|
+| Stack Docker | `docker-compose.yml` |
+| Orchestration planifiée | `.github/workflows/foglifter-engine.yml` |
+| Sauvegardes | `scripts/backup-foglifter.sh`, `scripts/restore-foglifter.sh` |
+| Vérifs locales | `scripts/check-environment.sh` |
+| TLS (exemple) | `docker/caddy/Caddyfile.example` |
 
-## Performance et exploitation
+## Roadmap (rappel)
 
-- **Postgres** : paramètres serveur injectés via `docker-compose.yml` (variables `POSTGRES_*` dans `.env.example`), `shm_size`, index GIN/B-tree dans `sql/005_performance_indexes.sql`.
-- **n8n** : pruning des exécutions, timeouts, limite de payload ; **retries** sur les nœuds HTTP OpenAI / broker dans les workflows exportés.
-- **Docker** : rotation des logs conteneurs (`x-logging`).
-- **Sauvegardes** : `scripts/backup-foglifter.sh` et `scripts/restore-foglifter.sh`.
-- **HTTPS** : exemple Caddy dans `docker/caddy/Caddyfile.example`.
-- **Ressources** : exemple de plafonds CPU/RAM dans `docker-compose.override.example.yml`.
-
-## Orchestration GitHub
-
-- Workflow **`.github/workflows/foglifter-engine.yml`** : cron toutes les **6 h (UTC)** + lancement manuel ; option pour **POST** vers un webhook n8n (`N8N_CRON_WEBHOOK_URL` dans les secrets du dépôt).
-- Voir **`docs/ARCHITECTURE-GITHUB-CENTRE.md`** (vision modulaire) et **`docs/GITHUB-ACTIONS-SECRETS.md`** (liste des secrets / variables).
-
-## Fichiers clés (résumé)
-
-| Composer | SQL | Workflow |
-|----------|-----|----------|
-| 1 | `001`, `002` (seed entreprises), `005` (index partagés) | `workflows/foglifter-main.json` |
-| 2 | `003`, `004` (seed instruments), `005` | `workflows/foglifter-arbitrage.json` |
-
-Scripts : `scripts/arbitrage-scoring.py`, `scripts/backup-foglifter.sh`, `scripts/restore-foglifter.sh`. CI : `.github/workflows/foglifter-engine.yml`.
-
-## Roadmap (esquisse)
-
-- **Composer 3** — veille narrative (X, médias) + indicateurs de « fog » / sentiment public.
-- **Composer 4** — marketplace d’experts (Clarity Network).
-- **Composer 5** — fonds / exécution (Clarity Fund), garde-fous conformité.
+Composer 3 → 5 : narrative / marketplace / fonds — voir fin de `docs/GUIDE-COMPLET.md` et `AGENTS.md` pour ne pas dériver hors périmètre.
 
 ## Avertissement
 
-Les sorties **Composer 2** sont des aides à la décision techniques, pas des conseils en investissement. Conformité AMF / MiFID / obligations d’information à respecter selon ton statut.
+**Composer 2** produit des signaux techniques, pas des conseils en investissement (conformité AMF / MiFID selon ton cas).

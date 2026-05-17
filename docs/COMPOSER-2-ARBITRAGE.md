@@ -1,5 +1,7 @@
 # Composer 2 — Agent d’arbitrage réglementaire
 
+> **Démarrage global** : [`00-DEMARRAGE.md`](00-DEMARRAGE.md) — ce fichier détaille uniquement Composer 2.
+
 Composer 2 transforme des flux **réglementaires / supervision** (AMF, EUR-Lex, etc.) en **signaux structurés** (BUY / SELL / HOLD) reliés à des **instruments** (`fl_instruments`), avec persistance dans `fl_arbitrage_matches` et alertes **Telegram** lorsque la confiance dépasse un seuil.
 
 Ce document complète `docs/GUIDE-COMPLET.md` (Composer 1) et `docs/PERFORMANCE-ET-EXPLOITATION.md` (tuning, sauvegardes, HTTPS).

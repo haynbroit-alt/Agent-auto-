@@ -1,5 +1,7 @@
 # Secrets et variables GitHub Actions (FogLifter Engine)
 
+> Parcours utilisateur : [`00-DEMARRAGE.md`](00-DEMARRAGE.md) — ce fichier détaille uniquement GitHub Actions.
+
 Workflow : `.github/workflows/foglifter-engine.yml`
 
 ## Secrets (Settings → Secrets and variables → Actions → *Secrets*)

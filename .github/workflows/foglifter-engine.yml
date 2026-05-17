@@ -52,3 +52,19 @@ jobs:
         run: |
           echo "Ajoute ici des steps : Python (scripts/), Supabase CLI, tests, etc."
           echo "Les clés vont dans les Secrets GitHub, jamais dans le code."
+
+      - name: Résumé pour l'onglet Actions
+        if: always()
+        run: |
+          {
+            echo "## FogLifter Engine"
+            echo ""
+            echo "| Champ | Valeur |"
+            echo "|-------|--------|"
+            echo "| Déclencheur | ${{ github.event_name }} |"
+            echo "| Branche | ${{ github.ref_name }} |"
+            echo "| SHA | \`${{ github.sha }}\` |"
+            echo "| Webhook n8n | Secret \`N8N_CRON_WEBHOOK_URL\` (défini = appel tenté en step dédié) |"
+            echo ""
+            echo "Documentation : \`docs/00-DEMARRAGE.md\`, \`docs/GITHUB-ACTIONS-SECRETS.md\`."
+          } >> "$GITHUB_STEP_SUMMARY"

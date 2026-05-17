@@ -1,5 +1,7 @@
 # Architecture « GitHub au centre » (Clarity / FogLifter)
 
+> **Par où commencer** : [`00-DEMARRAGE.md`](00-DEMARRAGE.md) — ce fichier décrit la vision modulaire long terme.
+
 Ce document fixe une **vision modulaire** : le dépôt GitHub est le **référentiel de vérité** (code, SQL, workflows n8n exportés, IaC légère) et le **point d’orchestration** (Actions planifiées ou manuelles). Les ressources d’exécution (VPS, bases managées, Redis, LLM) se branchent autour et sont **remplaçables** sans réécrire toute l’usine.
 
 ## Schéma logique
