@@ -1,11 +1,35 @@
+x-logging: &json-logging
+  driver: json-file
+  options:
+    max-size: "12m"
+    max-file: "4"
+
 services:
   postgres:
     image: postgres:16-alpine
     restart: always
+    shm_size: 256mb
+    logging: *json-logging
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-n8n}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:-n8n}
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=${POSTGRES_N8N_SHARED_BUFFERS:-128MB}"
+      - "-c"
+      - "effective_cache_size=${POSTGRES_N8N_EFFECTIVE_CACHE:-512MB}"
+      - "-c"
+      - "work_mem=${POSTGRES_N8N_WORK_MEM:-8MB}"
+      - "-c"
+      - "maintenance_work_mem=${POSTGRES_N8N_MAINTENANCE_WORK_MEM:-64MB}"
+      - "-c"
+      - "max_connections=${POSTGRES_N8N_MAX_CONNECTIONS:-100}"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -17,14 +41,33 @@ services:
   foglifter-postgres:
     image: postgres:16-alpine
     restart: always
+    shm_size: 512mb
+    logging: *json-logging
     environment:
       POSTGRES_USER: ${FOGLIFTER_DB_USER:-foglifter}
       POSTGRES_PASSWORD: ${FOGLIFTER_DB_PASSWORD:?set FOGLIFTER_DB_PASSWORD in .env}
       POSTGRES_DB: ${FOGLIFTER_DB_NAME:-foglifter}
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=${POSTGRES_FL_SHARED_BUFFERS:-256MB}"
+      - "-c"
+      - "effective_cache_size=${POSTGRES_FL_EFFECTIVE_CACHE:-1536MB}"
+      - "-c"
+      - "work_mem=${POSTGRES_FL_WORK_MEM:-12MB}"
+      - "-c"
+      - "maintenance_work_mem=${POSTGRES_FL_MAINTENANCE_WORK_MEM:-128MB}"
+      - "-c"
+      - "max_connections=${POSTGRES_FL_MAX_CONNECTIONS:-150}"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
     volumes:
       - foglifter_postgres_data:/var/lib/postgresql/data
       - ./sql/001_foglifter_schema.sql:/docker-entrypoint-initdb.d/001_foglifter_schema.sql:ro
       - ./sql/003_arbitrage_schema.sql:/docker-entrypoint-initdb.d/003_arbitrage_schema.sql:ro
+      - ./sql/005_performance_indexes.sql:/docker-entrypoint-initdb.d/005_performance_indexes.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${FOGLIFTER_DB_USER:-foglifter} -d ${FOGLIFTER_DB_NAME:-foglifter}"]
       interval: 10s
@@ -34,6 +77,7 @@ services:
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
     restart: always
+    logging: *json-logging
     ports:
       - "5678:5678"
     environment:
@@ -52,6 +96,12 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-false}
       - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-}
       - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-}
+      - EXECUTIONS_DATA_PRUNE=${EXECUTIONS_DATA_PRUNE:-true}
+      - EXECUTIONS_DATA_MAX_AGE=${EXECUTIONS_DATA_MAX_AGE:-336}
+      - EXECUTIONS_TIMEOUT=${EXECUTIONS_TIMEOUT:-300}
+      - EXECUTIONS_TIMEOUT_MAX=${EXECUTIONS_TIMEOUT_MAX:-900}
+      - N8N_PAYLOAD_SIZE_MAX=${N8N_PAYLOAD_SIZE_MAX:-32}
+      - N8N_DEFAULT_BINARY_DATA_MODE=${N8N_DEFAULT_BINARY_DATA_MODE:-filesystem}
       # Optionnel : utilisé par le workflow HTTP → OpenAI (Bearer dans le node)
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       # Optionnel : chat_id Telegram (node Telegram du workflow)

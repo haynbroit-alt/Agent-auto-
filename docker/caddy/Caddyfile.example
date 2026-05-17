@@ -1,0 +1,14 @@
+# Exemple Caddy 2 — HTTPS pour n8n (FogLifter)
+# Copier vers ton serveur, adapter le domaine, puis :
+#   docker run -d --name caddy --network host -v $PWD/Caddyfile:/etc/caddy/Caddyfile:ro caddy:2-alpine
+# Ou intégrer ce bloc dans une stack compose existante (réseau partagé avec n8n).
+
+n8n.example.com {
+	encode gzip zstd
+	reverse_proxy 127.0.0.1:5678
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}

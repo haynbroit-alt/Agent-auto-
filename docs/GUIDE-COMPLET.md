@@ -1,6 +1,6 @@
 # FogLifter — guide complet (smartphone-friendly)
 
-Ce dépôt regroupe une **stack prête à l’emploi** : Docker (n8n + PostgreSQL), schéma SQL métier, workflows n8n importables (Composer 1 + **Composer 2 — arbitrage réglementaire**, voir `docs/COMPOSER-2-ARBITRAGE.md`), et une alternative **Make.com** décrite séparément.
+Ce dépôt regroupe une **stack prête à l’emploi** : Docker (n8n + PostgreSQL), schéma SQL métier, workflows n8n importables (Composer 1 + **Composer 2 — arbitrage réglementaire**, voir `docs/COMPOSER-2-ARBITRAGE.md`), guide **performance / prod** (`docs/PERFORMANCE-ET-EXPLOITATION.md`), et une alternative **Make.com** décrite séparément.
 
 ## Objectif
 
@@ -83,9 +83,15 @@ docker compose up -d
 | `sql/002_seed_example_companies.sql` | Données de test |
 | `sql/003_arbitrage_schema.sql` | Schéma Composer 2 |
 | `sql/004_seed_arbitrage_instruments.sql` | Instruments de test |
+| `sql/005_performance_indexes.sql` | Index GIN/B-tree + ANALYZE (perf lecture / JSON) |
 | `workflows/foglifter-main.json` | Workflow MVP Composer 1 |
 | `workflows/foglifter-arbitrage.json` | Workflow Composer 2 |
 | `scripts/arbitrage-scoring.py` | Scoring backup hors n8n |
+| `scripts/backup-foglifter.sh` | Sauvegardes `pg_dump` |
+| `scripts/restore-foglifter.sh` | Restauration ciblée |
+| `docs/PERFORMANCE-ET-EXPLOITATION.md` | Tuning Postgres/n8n, HTTPS, cron, scaling |
+| `docker/caddy/Caddyfile.example` | Exemple TLS (Caddy) |
+| `docker-compose.override.example.yml` | Plafonds CPU/RAM type prod |
 | `docs/COMPOSER-2-ARBITRAGE.md` | Installation Composer 2 |
 | `docs/MAKE-COM-NOCODE.md` | Variante 100 % hébergée (Make) |
 
