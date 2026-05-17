@@ -1,5 +1,7 @@
 # Secrets et variables GitHub Actions (FogLifter Engine)
 
+**Dépôt** : [haynbroit-alt/Agent-auto-](https://github.com/haynbroit-alt/Agent-auto-) — onglet [Actions](https://github.com/haynbroit-alt/Agent-auto-/actions).
+
 > Parcours utilisateur : [`00-DEMARRAGE.md`](00-DEMARRAGE.md) — ce fichier détaille uniquement GitHub Actions.
 
 Workflow : `.github/workflows/foglifter-engine.yml`

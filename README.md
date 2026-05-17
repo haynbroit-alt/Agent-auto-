@@ -1,9 +1,20 @@
 # FogLifter / Clarity — hub du dépôt
 
+<div align="center">
+
+[![GitHub](https://img.shields.io/badge/GitHub-haynbroit--alt%2FAgent--auto-181717?logo=github)](https://github.com/haynbroit-alt/Agent-auto-)
+[![FogLifter Engine](https://github.com/haynbroit-alt/Agent-auto-/actions/workflows/foglifter-engine.yml/badge.svg)](https://github.com/haynbroit-alt/Agent-auto-/actions/workflows/foglifter-engine.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 [![Démarrage](https://img.shields.io/badge/docs-00--DEMARRAGE-0366d6)](./docs/00-DEMARRAGE.md)
+[![Index](https://img.shields.io/badge/docs-INDEX-0d9488)](./docs/INDEX.md)
 [![Agents](https://img.shields.io/badge/rules-AGENTS-6f42c1)](./AGENTS.md)
+[![Contribuer](https://img.shields.io/badge/contrib-CONTRIBUTING-1d4ed8)](./CONTRIBUTING.md)
+
+</div>
 
 **Commence par** [`docs/00-DEMARRAGE.md`](docs/00-DEMARRAGE.md) (parcours en 10 étapes, carte des docs, dépannage).  
+**Vue d’ensemble de toute la doc** : [`docs/INDEX.md`](docs/INDEX.md).  
 **Agents IA** : lis [`AGENTS.md`](AGENTS.md) avant toute modification.
 
 Ce dépôt contient une **usine à signaux** modulaire :
@@ -14,8 +25,9 @@ Ce dépôt contient une **usine à signaux** modulaire :
 ## En 30 secondes
 
 ```bash
-git clone <URL_DE_TON_DEPOT>.git
-cd <NOM_DU_DOSSIER_REPO>
+# Dépôt public de référence (remplace par ton fork si besoin)
+git clone https://github.com/haynbroit-alt/Agent-auto-.git
+cd Agent-auto-
 cp .env.example .env   # puis édite les lignes OBLIGATOIRES
 make check
 make up
@@ -43,7 +55,9 @@ flowchart LR
 | Sujet | Fichier |
 |-------|---------|
 | **Démarrage guidé** | [`docs/00-DEMARRAGE.md`](docs/00-DEMARRAGE.md) |
+| **Index de toute la doc** | [`docs/INDEX.md`](docs/INDEX.md) |
 | **Agents (IA)** | [`AGENTS.md`](AGENTS.md) |
+| **Contribuer** | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | VPS, mobile, migrations | [`docs/GUIDE-COMPLET.md`](docs/GUIDE-COMPLET.md) |
 | Composer 2 | [`docs/COMPOSER-2-ARBITRAGE.md`](docs/COMPOSER-2-ARBITRAGE.md) |
 | Performance, backups, HTTPS | [`docs/PERFORMANCE-ET-EXPLOITATION.md`](docs/PERFORMANCE-ET-EXPLOITATION.md) |
@@ -52,7 +66,7 @@ flowchart LR
 
 ## Raccourcis Makefile
 
-`make help` — voir `Makefile` (`check`, `up`, `down`, `logs`, `backup`, `ps`).
+`make help` — voir `Makefile` (`check`, `up`, `down`, `logs`, `logs-n8n`, `backup`, `ps`).
 
 ## Fichiers techniques utiles
 

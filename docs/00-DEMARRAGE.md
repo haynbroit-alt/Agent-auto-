@@ -7,13 +7,16 @@
 ## En 30 secondes
 
 ```bash
-git clone <URL_DE_TON_DEPOT>.git
-cd <NOM_DU_DOSSIER_REPO>
+# Dépôt public de référence (remplace par ton fork si besoin)
+git clone https://github.com/haynbroit-alt/Agent-auto-.git
+cd Agent-auto-
 cp .env.example .env
 # Édite .env : section OBLIGATOIRE (mots de passe, OPENAI_API_KEY, TELEGRAM_CHAT_ID, N8N_ENCRYPTION_KEY en prod)
 make check
 make up
 ```
+
+*(Tu peux aussi cloner une autre URL : remplace la première ligne par ton dépôt.)*
 
 Puis ouvre n8n sur `http://IP_DU_SERVEUR:5678`, importe `workflows/foglifter-main.json` et `workflows/foglifter-arbitrage.json`, et crée les **credentials** Postgres + Telegram (+ LLM si tu ne passes pas par `$env`).
 
@@ -30,8 +33,12 @@ Puis ouvre n8n sur `http://IP_DU_SERVEUR:5678`, importe `workflows/foglifter-mai
 | `docs/PERFORMANCE-ET-EXPLOITATION.md` | Backups, HTTPS, tuning, scaling |
 | `docs/ARCHITECTURE-GITHUB-CENTRE.md` | Vision modulaire (GitHub + cloud) |
 | `docs/GITHUB-ACTIONS-SECRETS.md` | Secrets Actions, webhooks, cron UTC |
+| `docs/INDEX.md` | Liste ordonnée de **toute** la documentation Markdown |
+| `CONTRIBUTING.md` | Comment contribuer + PR |
 | `docs/MAKE-COM-NOCODE.md` | Variante Make.com |
 | `README.md` | Hub synthétique du dépôt |
+| `LICENSE` | Licence MIT |
+| `SECURITY.md` | Signalement de vulnérabilités |
 
 ---
 

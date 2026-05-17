@@ -9,6 +9,13 @@ Ce fichier cadre le travail sur le dépôt **FogLifter / Clarity Layer** (Docker
 - **Journalisation métier** : les workflows existants écrivent dans **`fl_action_logs`** pour certaines actions (notifications, etc.). Ce n’est **pas** une obligation pour une simple modification de documentation dans le dépôt Git.
 - **Sécurité** : jamais de clés API, tokens ou mots de passe dans le code ou les workflows exportés ; utiliser **Secrets GitHub**, **Credentials n8n** et `.env` (non versionné).
 
+## Ressources du dépôt
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution humaine.
+- [`docs/INDEX.md`](docs/INDEX.md) — liste ordonnée de toute la documentation.
+- [`LICENSE`](LICENSE) — licence MIT.
+- [`SECURITY.md`](SECURITY.md) — signalement de vulnérabilités.
+
 ## Règles non négociables
 
 1. Ne **jamais** committer : `.env`, clés API, mots de passe, URLs de webhook avec jeton.
