@@ -6,6 +6,15 @@ Composer 2 transforme des flux **réglementaires / supervision** (AMF, EUR-Lex, 
 
 Ce document complète `docs/GUIDE-COMPLET.md` (Composer 1) et `docs/PERFORMANCE-ET-EXPLOITATION.md` (tuning, sauvegardes, HTTPS).
 
+## Résumé en une page
+
+| Sujet | Détail |
+|-------|--------|
+| **Objectif** | Transformer des flux AMF / ESMA / EUR-Lex (et assimilés) en signaux **BUY / SELL / HOLD** avec score de confiance, liés à des instruments (`fl_instruments`). |
+| **Workflow** | `workflows/foglifter-arbitrage.json` |
+| **SQL** | `sql/003_arbitrage_schema.sql`, index partagés `sql/005_performance_indexes.sql` |
+| **Avertissement légal** | Sorties **techniques** uniquement ; pas de conseil en investissement (conformité AMF / MiFID selon ton cas). |
+
 ## Prérequis
 
 - Stack Docker déjà opérationnelle (`docker-compose.yml`).

@@ -1,5 +1,8 @@
 # FogLifter / Clarity — hub du dépôt
 
+[![Démarrage](https://img.shields.io/badge/docs-00--DEMARRAGE-0366d6)](./docs/00-DEMARRAGE.md)
+[![Agents](https://img.shields.io/badge/rules-AGENTS-6f42c1)](./AGENTS.md)
+
 **Commence par** [`docs/00-DEMARRAGE.md`](docs/00-DEMARRAGE.md) (parcours en 10 étapes, carte des docs, dépannage).  
 **Agents IA** : lis [`AGENTS.md`](AGENTS.md) avant toute modification.
 
@@ -11,12 +14,14 @@ Ce dépôt contient une **usine à signaux** modulaire :
 ## En 30 secondes
 
 ```bash
+git clone <URL_DE_TON_DEPOT>.git
+cd <NOM_DU_DOSSIER_REPO>
 cp .env.example .env   # puis édite les lignes OBLIGATOIRES
-make check             # ou : ./scripts/check-environment.sh
-make up                # ou : docker compose up -d
+make check
+make up
 ```
 
-Puis importe les workflows dans n8n et configure les **credentials** Postgres + Telegram (détail dans le démarrage).
+Puis importe les workflows dans n8n et configure les **credentials** Postgres + Telegram (détail dans [`docs/00-DEMARRAGE.md`](docs/00-DEMARRAGE.md)).
 
 ## Schéma
 
