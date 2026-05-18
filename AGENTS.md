@@ -67,3 +67,71 @@ Ne pas étendre ces périmètres **sans** demande claire ou sans mettre à jour 
 ## Périmètre des changements
 
 Rester focalisé sur la demande : pas de refactor massif ni de nouveaux services Docker sans besoin exprimé. Préférer documentation + scripts **idempotents**.
+
+## Cursor Cloud specific instructions
+
+### Services
+
+This is a Docker Compose stack with 3 services:
+
+| Service | Role | Port |
+|---------|------|------|
+| `postgres` | n8n internal metadata DB (Postgres 16) | 5432 (internal) |
+| `foglifter-postgres` | FogLifter business data DB (Postgres 16) | 5432 (internal) |
+| `n8n` | Workflow automation engine (UI + API) | 5678 (exposed) |
+
+### Starting the stack
+
+```bash
+# Ensure Docker daemon is running (update script handles this)
+cd /workspace
+docker compose up -d
+# Wait ~15s for healthchecks, then:
+curl -s http://localhost:5678/healthz  # → {"status":"ok"}
+```
+
+### n8n owner account (dev)
+
+On first setup the owner account must be created via:
+```bash
+curl -s http://localhost:5678/rest/owner/setup -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"dev@foglifter.local","firstName":"Dev","lastName":"Agent","password":"DevPassword123!"}'
+```
+
+Login uses field `emailOrLdapLoginId` (not `email`):
+```bash
+curl -s http://localhost:5678/rest/login -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"emailOrLdapLoginId":"dev@foglifter.local","password":"DevPassword123!"}' \
+  -c /tmp/n8n-cookies.txt
+```
+
+### Importing workflows
+
+Use the REST API with session cookies (not the public API which requires scoped keys):
+```bash
+curl -s http://localhost:5678/rest/workflows -X POST \
+  -H 'Content-Type: application/json' \
+  -b /tmp/n8n-cookies.txt \
+  -d @workflows/foglifter-main.json
+```
+
+### Loading seed data
+
+```bash
+docker compose exec -T foglifter-postgres psql -U foglifter -d foglifter < sql/002_seed_example_companies.sql
+docker compose exec -T foglifter-postgres psql -U foglifter -d foglifter < sql/004_seed_arbitrage_instruments.sql
+```
+
+### Lint / validation
+
+- `make check` or `./scripts/check-environment.sh` — validates JSON workflows, YAML syntax, Docker presence
+- JSON validation only: `python3 -m json.tool workflows/<file>.json`
+
+### Key gotchas
+
+- The `docker-entrypoint-initdb.d` SQL scripts only run on **first volume creation**. If volumes already exist, apply new SQL migrations manually via `docker compose exec -T foglifter-postgres psql ...`.
+- The `.env` file is never committed (`.gitignore`). The update script auto-generates one with dev passwords if missing.
+- Workflow execution requires a real `OPENAI_API_KEY` — the stack starts fine without it but LLM nodes will fail at runtime.
+- n8n credentials (Telegram bot token, etc.) are not in workflow exports — they must be created in the n8n UI after import.
